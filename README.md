@@ -1,6 +1,5 @@
 Spring Boot Microservices Project
 
-README.md Content
 
 1. Project Overview
 
