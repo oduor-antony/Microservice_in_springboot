@@ -9,7 +9,7 @@ This project is a Spring Boot microservices backend application designed to demo
 
                          ┌──────────────────────┐
                          │      API Gateway     │
-                         │       Port 8085      │
+                         │       Port 8080      │
                          └──────────┬───────────┘
                                     │
                     ┌───────────────┼────────────────┐
