@@ -4,10 +4,12 @@ package com.vidat.order_services.service;
 import com.vidat.order_services.dto.InventoryResponse;
 import com.vidat.order_services.dto.OrderLineItemsDTO;
 import com.vidat.order_services.dto.OrderRequest;
+import com.vidat.order_services.event.OrderPlacedEvent;
 import com.vidat.order_services.model.Order;
 import com.vidat.order_services.model.OrderLineItems;
 import com.vidat.order_services.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -20,7 +22,8 @@ import java.util.UUID;
 public class OrderService {
     private  final WebClient.Builder webClientBuilder;
     private final OrderRepository orderRepository;
-    public void placeOrder(OrderRequest orderRequest){
+    private final KafkaTemplate<String,OrderPlacedEvent> kafkaTemplate;
+    public String placeOrder(OrderRequest orderRequest){
         Order order=new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
         List<OrderLineItems> orderLineItems=orderRequest.getOrderLineItemsDTOList()
@@ -47,6 +50,8 @@ public class OrderService {
       boolean allProductsInStock=  Arrays.stream(inventoryResponsesArray).allMatch(InventoryResponse::isInStock);
         if(allProductsInStock){
             orderRepository.save(order);
+            kafkaTemplate.send("notification",new OrderPlacedEvent(order.getOrderNumber()));
+            return "Order placed succesfully";
         }
         else {
             throw new IllegalArgumentException("product is not in stock, please try again later");
